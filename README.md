@@ -29,6 +29,18 @@ A web app built with **Python, Flask and NumPy** that finds the most common colo
    - *brightness*: the colours look the same after scaling their brightest channel to 255.
 5. The app keeps a label for every pixel, so it can draw a mask that highlights where each colour appears.
 
+## Why JavaScript
+
+**Python finds the colours, and JavaScript makes the page interactive.** Python runs on the server, while the browser can only run JavaScript. So everything that should react instantly, without reloading the page, lives in `static/app.js`:
+
+- **Live update**: when a slider or switch changes, JavaScript sends the image and the new settings to `/palette` with `fetch` and puts the returned HTML on the page. The calculation itself still happens in NumPy on the server. Requests are debounced (180 ms), and an outdated request is cancelled with `AbortController`, so an old result can never overwrite a newer one.
+- **Uploading**: drag and drop, paste from the clipboard and an instant preview. If the browser cannot show the file itself (HEIC outside Safari), it asks the server for a JPEG preview.
+- **Highlight on the photo**: Python creates a mask for each colour, and JavaScript lays it over the photo when you hover over that colour.
+- **Colour picker**: the photo is drawn on a hidden `<canvas>`, and the pixel under the cursor is read in the browser, without the server.
+- **Copy and export**: HEX codes, CSS variables and JSON go to the clipboard. The PNG palette card is drawn on a `<canvas>` and downloaded.
+
+JavaScript is an enhancement, not a requirement (*progressive enhancement*). With JavaScript turned off, the page works as a plain form: choose a file, press "Extract colours" and the server returns the full page with the palette. That button is hidden when JavaScript is on, because the palette updates by itself.
+
 ## Python tools and techniques used
 
 | Tool | What it does in this project |
