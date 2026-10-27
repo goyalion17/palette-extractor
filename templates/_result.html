@@ -1,0 +1,53 @@
+{% if error %}
+  <p class="error">{{ error }}</p>
+{% elif palette %}
+  {% if preview %}<span class="server-preview" data-src="{{ preview }}" hidden></span>{% endif %}
+  <div class="strip" aria-hidden="true">
+    {% for c, mask in palette %}
+      <span style="background: {{ c.hex }}; flex-grow: {{ c.share }}" data-index="{{ loop.index0 }}"></span>
+    {% endfor %}
+  </div>
+
+  <ol class="swatches">
+    {% for c, mask in palette %}
+      <li class="swatch" data-index="{{ loop.index0 }}" data-mask="{{ mask }}" data-hex="{{ c.hex }}"
+          data-rgb="{{ c.rgb|join(',') }}" data-share="{{ '%.4f'|format(c.share) }}" tabindex="0">
+        <span class="chip {{ 'is-light' if c.is_light }}" style="background: {{ c.hex }}"></span>
+        <span class="codes">
+          <button type="button" class="code" data-copy="{{ c.hex }}">{{ c.hex }}</button>
+          <span class="sub">rgb({{ c.rgb|join(', ') }}) · {{ c.hsl }}</span>
+        </span>
+        <span class="share">
+          {{ "%.1f"|format(c.share * 100) ~ "%" if c.share >= 0.001 else "<0.1%" }}
+          <span class="bar"><span style="width: {{ c.share * 100 }}%"></span></span>
+        </span>
+      </li>
+    {% endfor %}
+  </ol>
+
+  <section class="block">
+    <h2>Export</h2>
+    <div class="export">
+      <button type="button" class="link" data-export="css">Copy CSS variables</button>
+      <button type="button" class="link" data-export="json">Copy JSON</button>
+      <button type="button" class="link" data-export="png">Download PNG</button>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Readable pairs</h2>
+    {% if pairs %}
+      <ul class="pairs">
+        {% for a, b, ratio in pairs %}
+          <li class="pair" style="background: {{ a.hex }}; color: {{ b.hex }}">
+            <span class="pair-sample">Aa</span>
+            <span class="pair-meta">{{ "%.1f"|format(ratio) }}:1 · {{ "AAA" if ratio >= 7 else "AA" }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+      <p class="note">Text in one colour on a background of the other passes WCAG contrast.</p>
+    {% else %}
+      <p class="note">No two colours here are contrasting enough for body text (WCAG AA, 4.5:1).</p>
+    {% endif %}
+  </section>
+{% endif %}

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Palette Extractor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ asset_v }}">
+  <script>document.documentElement.classList.add("js")</script>
+</head>
+<body>
+  <header class="masthead">
+    <p class="eyebrow">A colour study tool</p>
+    <h1>Palette Extractor</h1>
+    <p class="lede">Drop in a photograph and read its colours — the shades it is really made of, with codes ready for your CSS.</p>
+  </header>
+
+  <form id="studio" class="studio" method="post" action="{{ url_for('index_post') }}" enctype="multipart/form-data"
+        data-palette-url="{{ url_for('palette_fragment') }}">
+    <section class="canvas">
+      <label class="drop {{ 'has-image' if preview }}" id="drop" for="image">
+        <input type="file" id="image" name="image" accept="image/*,.heic,.heif" class="visually-hidden" {{ 'required' if not preview }}>
+        <span class="drop-empty">
+          <span class="drop-title">Drop an image here</span>
+          <span class="drop-hint">or <u>browse your files</u> · PNG, JPG, WebP, HEIC up to 10 MB</span>
+        </span>
+        <span class="stage">
+          <img id="preview" {% if preview %}src="{{ preview }}"{% endif %} alt="{{ filename or 'Uploaded image' }}">
+          <span id="veil" class="veil" aria-hidden="true"></span>
+          <span id="loupe" class="loupe" hidden></span>
+        </span>
+      </label>
+      <div class="canvas-bar">
+        <span id="filename" class="filename">{{ filename or '' }}</span>
+        <span class="js-only hint">Click the photo to sample a colour</span>
+        <button type="button" id="replace" class="link js-only">Replace image</button>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <fieldset class="controls">
+        <legend class="visually-hidden">Settings</legend>
+        <label class="range">
+          <span class="range-head">Colours <output id="n_colors_out">{{ n_colors }}</output></span>
+          <input type="range" name="n_colors" min="1" max="20" value="{{ n_colors }}" data-output="n_colors_out">
+        </label>
+        <label class="range">
+          <span class="range-head">Delta <output id="delta_out">{{ delta }}</output></span>
+          <input type="range" name="delta" min="4" max="64" value="{{ delta }}" data-output="delta_out">
+          <span class="note">Bigger delta — fewer, broader colours</span>
+        </label>
+        <label class="switch">
+          <input type="checkbox" name="reduce_gradient" {{ 'checked' if reduce_gradient }}>
+          <span class="track" aria-hidden="true"></span>
+          <span>Reduce gradient <span class="note">merge neighbouring shades</span></span>
+        </label>
+        <label class="switch">
+          <input type="checkbox" name="reduce_brightness" {{ 'checked' if reduce_brightness }}>
+          <span class="track" aria-hidden="true"></span>
+          <span>Reduce brightness <span class="note">merge light and dark versions of a hue</span></span>
+        </label>
+        <button type="submit" class="run">Extract colours</button>
+      </fieldset>
+
+      <div id="picked" class="picked" hidden>
+        <span class="picked-chip"></span>
+        <span>Sampled</span>
+        <button type="button" class="code" data-copy=""></button>
+      </div>
+
+      <div id="result" class="result" aria-live="polite">
+        {% if error or palette %}{% include "_result.html" %}{% endif %}
+      </div>
+    </aside>
+  </form>
+
+  <footer class="colophon">Colours are counted on a 300 px copy of your image. Nothing is stored on the server.</footer>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script src="{{ url_for('static', filename='app.js') }}?v={{ asset_v }}"></script>
+</body>
+</html>
